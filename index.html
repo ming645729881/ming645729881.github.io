@@ -7,14 +7,38 @@
     <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css" />
     <script src="https://js.arcgis.com/4.24/"></script>
     <style>
-        html,
-        body,
-        #viewDiv {
-            padding: 0;
-            margin: 0;
-            height: 100%;
-            width: 100%;
-        }
+      html,body,#viewDiv {
+        padding: 0;
+        margin: 0;
+        height: 100%;
+        width: 100%;
+      }
+      #toolbars{
+        border:2px solid rgba(51, 133, 255, 0.3);
+        background-color: white;
+        width: 92px;
+        height: 36px;
+        position: absolute;
+        top:15px;
+        left: 50%;
+        display: flex; /* 设置展示方式 平铺还是竖直 */
+        flex-direction: row;
+        flex-wrap: nowrap;
+        border-radius: 15px;
+
+      }
+
+      #toolbars label{
+        /* cursor: pointer; */
+        margin-top: 6px;
+        margin-left: 10px;
+        margin-right: 10px;
+        font-size: 18px;
+        color: rgba(0, 0, 0, 0.9)
+      }
+       
+
+
 
         #toolbarDiv {
             position: absolute;
@@ -109,7 +133,6 @@
         viewModel: sketchViewModel
     });
     view.ui.add(sketchWidget, { position: "top-right" });
-
             // 创建热力图渲染器
             const heatmapRenderer = new HeatmapRenderer({
                 colorStops: [
@@ -228,7 +251,6 @@
 <body>
 
     <div id="viewDiv"></div>
-
     <div id="toolbarDiv" class="esri-component esri-widget">
 
         <button id="distance" class="esri-widget--button esri-interactive esri-icon-measure-line" title="Distance Measurement Tool"></button>
@@ -238,7 +260,20 @@
         <button id="clear" class="esri-widget--button esri-interactive esri-icon-trash" title="Clear Measurements"></button>
 
     </div>
-
+    <div id="toolbars">   
+        <label>
+            <input
+              type = "button"
+              id="addFeatureLayer-btn"
+              style="display: none;" 
+            >展示地图
+        </label>       
+    </div>
+    <!-- <div class="esri-widget" id ="SearchDiv">
+        <input type="text" id="inputtext" placeholder="请输入你要查询的内容" >
+        <button class="esri-widget"title="查询工具" style="border: none;cursor: pointer;" id="doSearchBtn">查询</button>
+        <p><span id="printResults"></span></p>
+    </div> -->
 </body>
 
 </html>
