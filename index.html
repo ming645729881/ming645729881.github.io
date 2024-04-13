@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <title>Demo</title>
+    <link rel="stylesheet" href="https://js.arcgis.com/4.24/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.24/"></script>
+    <style>
+        html,
+        body,
+        #viewDiv {
+            padding: 0;
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+
+        #toolbarDiv {
+            position: absolute;
+            top: 75px;
+            right: 15px;
+            cursor: default;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: nowrap;
+        }
+
+        .esri-widget--button.active,
+        .esri-widget--button.active:hover,
+        .esri-widget--button.active:focus {
+            cursor: default;
+            background-color: #999696;
+        }
+
+        .esri-widget--button.active path,
+        .esri-widget--button.active:hover path,
+        .esri-widget--button.active:focus path {
+            fill: #E4E4E4;
+        }
+    </style>
+
+    <script>
+        require([
+            "esri/Map",
+            "esri/views/MapView",
+            "esri/widgets/Search",
+            "esri/widgets/BasemapToggle",
+            "esri/widgets/Measurement",
+            "esri/widgets/Legend",
+            "esri/widgets/Sketch",
+            "esri/layers/CSVLayer",
+            "esri/renderers/HeatmapRenderer",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/Color",
+            "esri/widgets/Sketch/SketchViewModel",
+            "esri/layers/GraphicsLayer",
+            "esri/widgets/ScaleBar"
+        ], (
+            Map,
+            MapView,
+            Search,
+            BasemapToggle,
+            Measurement,
+            Legend,
+            Sketch,
+            CSVLayer,
+            HeatmapRenderer,
+            SimpleMarkerSymbol,
+            Color,
+            SketchViewModel,
+            GraphicsLayer,
+            ScaleBar
+        ) => {
+            const map = new Map({
+                basemap: "topo-vector"
+            });
+
+            const view = new MapView({
+                container: "viewDiv",
+                map: map,
+                zoom: 10,
+                center: [123.4291, 41.7968]
+            });
+
+            const searchWidget = new Search({
+                view: view
+            });
+
+            const basemapToggle = new BasemapToggle({
+                view: view,
+                nextBasemap: "satellite"
+            });
+
+            const measurementWidget = new Measurement({
+                view: view
+            });
+
+            const legend = new Legend({
+                view: view
+            });
+            const sketchViewModel = new SketchViewModel({
+        view: view,
+        layer: new GraphicsLayer() // 您可以根据需要更改图层类型
+    });
+
+    const sketchWidget = new Sketch({
+        view: view,
+        viewModel: sketchViewModel
+    });
+    view.ui.add(sketchWidget, { position: "top-right" });
+
+            // 创建热力图渲染器
+            const heatmapRenderer = new HeatmapRenderer({
+                colorStops: [
+                    { color: "rgba(63, 40, 102, 0)", ratio: 0 },
+                    { color: "#472b77", ratio: 0.083 },
+                    { color: "#4e2d87", ratio: 0.166 },
+                    { color: "#563098", ratio: 0.249 },
+                    { color: "#5d32a8", ratio: 0.332 },
+                    { color: "#6735be", ratio: 0.415 },
+                    { color: "#7139d4", ratio: 0.498 },
+                    { color: "#7b3ce9", ratio: 0.581 },
+                    { color: "#853fff", ratio: 0.664 },
+                    { color: "#a46fbf", ratio: 0.747 },
+                    { color: "#c29f80", ratio: 0.83 },
+                    { color: "#e0cf40", ratio: 0.913 },
+                    { color: "#ffff00", ratio: 1 }
+                ],
+                maxPixelIntensity: 100,
+                minPixelIntensity: 0
+            });
+
+            // 创建热力图图层
+            const heatmapLayer = new CSVLayer({
+                url: "https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_week.csv",
+                renderer: heatmapRenderer
+            });
+
+            // 添加热力图图层到地图
+            map.add(heatmapLayer);
+
+            view.ui.add(searchWidget, {
+                position: "top-left"
+            });
+
+            view.ui.add(basemapToggle, {
+                position: "bottom-right"
+            });
+
+            view.ui.add(measurementWidget, {
+                position: "bottom-right"
+            });
+
+
+            view.ui.add(legend, {
+                position: "bottom-left"
+            });
+
+            view.ui.remove('attribution')//这一句用于去除地图下方自带的esri官方的标志
+            // 创建比例尺 widget
+            const scaleBar = new ScaleBar({
+                view: view,
+                unit: "metric" // The scale bar displays both metric and non-metric units.
+            });
+
+            // Add the widget to the bottom left corner of the view
+            view.ui.add(scaleBar, {
+                position: "bottom-left"
+            });
+     
+           // const switchButton = document.getElementById("switch-btn");
+            const distanceButton = document.getElementById('distance');
+            const areaButton = document.getElementById('area');
+            const clearButton = document.getElementById('clear');
+
+            // switchButton.addEventListener("click", () => {
+            //     switchView();
+            // });
+
+            distanceButton.addEventListener("click", () => {
+                distanceMeasurement();
+            });
+
+            areaButton.addEventListener("click", () => {
+                areaMeasurement();
+            });
+
+            clearButton.addEventListener("click", () => {
+                clearMeasurements();
+            });
+
+            loadView();
+
+            function loadView() {
+                measurementWidget.view = view;
+                legend.view = view;
+            }
+
+            function switchView() {
+                measurementWidget.view = view;
+            }
+
+            function distanceMeasurement() {
+                measurementWidget.activeTool = "distance";
+                distanceButton.classList.add("active");
+                areaButton.classList.remove("active");
+            }
+
+            function areaMeasurement() {
+                measurementWidget.activeTool = "area";
+                distanceButton.classList.remove("active");
+                areaButton.classList.add("active");
+            }
+
+            function clearMeasurements() {
+                distanceButton.classList.remove("active");
+                areaButton.classList.remove("active");
+                measurementWidget.clear();
+            }
+
+        });
+
+    </script>
+
+</head>
+
+<body>
+
+    <div id="viewDiv"></div>
+
+    <div id="toolbarDiv" class="esri-component esri-widget">
+
+        <button id="distance" class="esri-widget--button esri-interactive esri-icon-measure-line" title="Distance Measurement Tool"></button>
+
+        <button id="area" class="esri-widget--button esri-interactive esri-icon-measure-area" title="Area Measurement Tool"></button>
+
+        <button id="clear" class="esri-widget--button esri-interactive esri-icon-trash" title="Clear Measurements"></button>
+
+    </div>
+
+</body>
+
+</html>
